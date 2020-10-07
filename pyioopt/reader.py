@@ -8,9 +8,3 @@ class reader (Sequence, ABC) :
     @abstractmethod
     def addFile(self) :
         pass
-
-    @property
-    @abstractmethod
-    def nFiles(self) :
-        pass
-

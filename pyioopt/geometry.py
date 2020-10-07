@@ -1,4 +1,4 @@
-from collections.abc import Colleaction
+from collections.abc import Collection
 from abc import ABC, abstractmethod
 
 class detectorGeometry (Collection, ABC) :
