@@ -1,4 +1,4 @@
-from pyioopt import reader, dataModel, geometry
+from pyioopt.core import reader, dataModel, geometry
 
 import numpy as np
 
