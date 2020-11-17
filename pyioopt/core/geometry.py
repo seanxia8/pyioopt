@@ -71,7 +71,7 @@ class cylindricalDetector(detectorGeometry) :
         bestnEmpty = 1e6
         for thisN_Z in [np.floor(N_Z), np.ceil(N_Z)] :
             for thisN_PHI in [np.floor(N_PHI), np.ceil(N_PHI)] :
-                arr = np.zeros((int(thisN_PHI), int(thisN_Z)))
+                arr = np.zeros((int(thisN_Z), int(thisN_PHI)))
                 nEmpty.append(int(thisN_PHI*thisN_Z) - len(pmt_z))
                 if nEmpty[-1] < 0 :
                     print("NOT ENOUGH PIXELS!")
@@ -82,8 +82,8 @@ class cylindricalDetector(detectorGeometry) :
                     irphi = int((rphi-pmt_rphi_min)/pmt_min_drphi)
                     iz = int((z-pmtZmin)/pmt_min_dz)
              #       print(rphi,irphi, pmt_rphi_min, pmt_rphi_extent)
-                    arr[irphi][iz] += 1
-                    if arr[irphi][iz] > 1 :
+                    arr[iz][irphi] += 1
+                    if arr[iz][irphi] > 1 :
                         print("DOUBLE OCCUPANCY!")
                         print(rphi, z)
                         print(irphi, iz)
@@ -141,7 +141,7 @@ class cylindricalDetector(detectorGeometry) :
             bestnEmpty = 1e6
             for thisN_X in [np.floor(N_EC[endcap][x]), np.ceil(N_EC[endcap][x])] :
                 for thisN_Y in [np.floor(N_EC[endcap][y]), np.ceil(N_EC[endcap][y])] :
-                    arr = np.zeros((int(thisN_X), int(thisN_Y)))
+                    arr = np.zeros((int(thisN_Y), int(thisN_X)))
                     nEmpty.append(int(thisN_X*thisN_Y) - sum(self._pmts['location'] == endcapLoc[endcap]))
 
                     if nEmpty[-1] < 0 :
@@ -152,8 +152,8 @@ class cylindricalDetector(detectorGeometry) :
                     for this_x, this_y in zip(pmt_x[x], pmt_x[y]) :
                         ix = int((this_x-min_EC[endcap][x])/d_EC[endcap][x])
                         iy = int((this_y-min_EC[endcap][y])/d_EC[endcap][y])
-                        arr[ix][iy] += 1
-                        if arr[ix][iy] > 1 :
+                        arr[iy][ix] += 1
+                        if arr[iy][ix] > 1 :
                             print("DOUBLE OCCUPANCY!")
                             print(this_x, this_y)
                             print(ix, iy)
