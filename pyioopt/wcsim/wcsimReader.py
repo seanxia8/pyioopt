@@ -84,14 +84,20 @@ class wcsimSubEvent(dataModel.subEvent) :
         for i, hit in enumerate(hits) :
             self._hits[i] = (hit.GetTubeId(), hit.GetQ(), hit.GetT())
 
+        nTrueTracks = trigger.GetNtrack()
+        self._trueTracks = np.zeros(nTrueTracks, dtype = [('PDG_code', np.uint32), ('m', np.float32), ('p', np.float32), ('E', np.float32), ('startvol', np.int32), ('stopvol', np.int32), ('dir_x', np.float32), ('dir_y', np.float32), ('dir_z', np.float32), ('stop_x', np.float32), ('stop_y', np.float32), ('stop_z', np.float32), ('start_x', np.float32), ('start_y', np.float32), ('start_z', np.float32), ('parenttype', np.int32), ('time', np.float32), ('id', np.int32)])
+
+        for i, track in enumerate(trigger.GetTracks()) :
+            self._trueTracks = (track.GetIpnu(), track.GetM(), track.GetP(), track.GetE(), track.GetStartvol(), track.GetStopvol(), track.GetDir(0), track.GetDir(1), track.GetDir(2), track.GetStop(0), track.GetStop(1), track.GetStop(2), track.GetStart(0), track.GetStart(1), track.GetStart(2), track.GetParenttype(), track.GetTime(), track.GetId())
+
     def time(self) :
         return 0
-
     def trigger(self) :
         return 0
-
     def hits(self) :
         return self._hits
+    def trueTracks(self) :
+        return self._trueTracks
     
 class wcsimGeometry(geometry.cylindricalDetector) :
     def __init__(self, geometryChain) :

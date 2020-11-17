@@ -31,14 +31,14 @@ for iev, event in enumerate(rd) :
 
         for hit in sub.hits() :
             if rd.geometry.pmts()["location"][hit["PMT_number"]-1] == 0 :
-                thisTop_q[rd.geometry.pmts()["row"][hit["PMT_number"]-1], rd.geometry.pmts()["column"][hit["PMT_number"]-1]] = hit['q']
-                thisTop_t[rd.geometry.pmts()["row"][hit["PMT_number"]-1], rd.geometry.pmts()["column"][hit["PMT_number"]-1]] = hit['t']
+                thisTop_q[rd.geometry.pmts()["column"][hit["PMT_number"]-1], rd.geometry.pmts()["row"][hit["PMT_number"]-1]] = hit['q']
+                thisTop_t[rd.geometry.pmts()["column"][hit["PMT_number"]-1], rd.geometry.pmts()["row"][hit["PMT_number"]-1]] = hit['t']
             elif rd.geometry.pmts()["location"][hit["PMT_number"]-1] == 1 :
-                thisBarrel_q[rd.geometry.pmts()["row"][hit["PMT_number"]-1], rd.geometry.pmts()["column"][hit["PMT_number"]-1]] = hit['q']
-                thisBarrel_t[rd.geometry.pmts()["row"][hit["PMT_number"]-1], rd.geometry.pmts()["column"][hit["PMT_number"]-1]] = hit['t']
+                thisBarrel_q[rd.geometry.pmts()["column"][hit["PMT_number"]-1], rd.geometry.pmts()["row"][hit["PMT_number"]-1]] = hit['q']
+                thisBarrel_t[rd.geometry.pmts()["column"][hit["PMT_number"]-1], rd.geometry.pmts()["row"][hit["PMT_number"]-1]] = hit['t']
             elif rd.geometry.pmts()["location"][hit["PMT_number"]-1] == 2 :
-                thisBottom_q[rd.geometry.pmts()["row"][hit["PMT_number"]-1], rd.geometry.pmts()["column"][hit["PMT_number"]-1]] = hit['q']
-                thisBottom_t[rd.geometry.pmts()["row"][hit["PMT_number"]-1], rd.geometry.pmts()["column"][hit["PMT_number"]-1]] = hit['t']
+                thisBottom_q[rd.geometry.pmts()["column"][hit["PMT_number"]-1], rd.geometry.pmts()["row"][hit["PMT_number"]-1]] = hit['q']
+                thisBottom_t[rd.geometry.pmts()["column"][hit["PMT_number"]-1], rd.geometry.pmts()["row"][hit["PMT_number"]-1]] = hit['t']
         plt.figure()
         plt.imshow(thisTop_q)
         plt.figure()
