@@ -29,6 +29,9 @@ class wcsimReader(reader.reader) :
         # Set up TChains
         self.eventChain = ROOT.TChain("wcsimT")
         self.geometryChain = ROOT.TChain("wcsimGeoT")
+
+        # Geometry is read in when first file gets added
+        self.geometry = None
         
     def __getitem__(self, i) :
         if i < 0 or i > self.N :
@@ -42,9 +45,12 @@ class wcsimReader(reader.reader) :
 
     def addFile(self, fileName) :
         self.eventChain.Add(fileName)
-        self.geometryChain.Add(fileName)
         self.N = self.eventChain.GetEntries()
         self.eventChain.GetBranch("wcsimrootevent").SetAutoDelete(ROOT.kTRUE)
+
+        if self.geometry == None :
+            self.geometryChain.Add(fileName)
+            self.geometry = wcsimGeometry(self.geometryChain)
 
 class wcsimEvent(dataModel.event) :
     def __init__(self, wcsimRootEvent) :
@@ -87,5 +93,44 @@ class wcsimSubEvent(dataModel.subEvent) :
     def hits(self) :
         return self._hits
     
+class wcsimGeometry(geometry.cylindricalDetector) :
+    def __init__(self, geometryChain) :
+        geometryChain.GetEntry(0)
+        thisGeo = geometryChain.wcsimrootgeom
+        self.N_PMT = thisGeo.GetWCNumPMT()
+        self._radius = thisGeo.GetWCCylRadius()
+        self._halfHeight = thisGeo.GetWCCylLength()
+
+        self._pmts = np.zeros(self.N_PMT, dtype = [('x', np.float32), ('y', np.float32), ('z', np.float32), ('dir_x', np.float32), ('dir_y', np.float32), ('dir_z', np.float32), ('location', np.uint8), ('row', np.uint16), ('column', np.uint16)])
+
+        for iPMT in range(self.N_PMT) :
+            this_pmt = thisGeo.GetPMTPtr(iPMT)
+            
+            self._pmts[iPMT] = (this_pmt.GetPosition(0),
+                                this_pmt.GetPosition(1),
+                                this_pmt.GetPosition(2),
+                                this_pmt.GetOrientation(0),
+                                this_pmt.GetOrientation(1),
+                                this_pmt.GetOrientation(2),
+                                this_pmt.GetCylLoc(),
+                                0, 0)
+
+
+        self.fillRowColumn()
+
+    def __contains__(self, m):
+        return False
+    def __iter__(self) :
+        return self._pmts.__iter__
+    def __len__(self) :
+        return self._pmts.__len__
+    def radius(self) :
+        return self._radius
+    def halfHeight(self) :
+        return self._halfHeight
+    def pmts(self) :
+        return self._pmts
         
-        
+            
+            
+                                                            
