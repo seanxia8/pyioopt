@@ -1,9 +1,9 @@
-import wcsimReader
+import wcsim_reader
 
 import numpy as np
 import matplotlib.pyplot as plt
 
-rd = wcsimReader.wcsimReader()
+rd = wcsim_reader.Reader()
 print("Initialized reader")
 
 rd.addFile("/Users/cvilela/WCML/TrainingSampleProductionWCSim/wcsim.root")

@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from abc import ABC, abstractmethod
 
-class reader (Sequence, ABC) :
+class Reader (Sequence, ABC) :
     def __init__(self) :
         pass
 
