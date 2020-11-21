@@ -1,87 +1,70 @@
 from pyioopt.core import reader, data_model, geometry
 
 from os import environ
+from glob import glob
 from pathlib import Path
 
 import numpy as np
 
-import ROOT
+import py_wcsim_reader
 
-class Reader(reader.Reader) :
-    
-    root_system = None
+class Reader(reader.Reader, geometry.cylindricalDetector) :
     
     def __init__(self) :
-
-        if Reader.root_system == None :
-            # Check if WCSim ROOT lib set up
-            if environ.get('WCSIMDIR') == None :
-                raise RuntimeError('WCSIMDIR not set')
-
-            # Load WCSim ROOT library
-            self.wcsimRootLib = list(Path(environ.get('WCSIMDIR')).glob('**/libWCSimRoot.so'))
-            if len(self.wcsimRootLib) == 0 :
-                self.wcsimRootLib = list(Path(environ.get('WCSIMDIR')).glob('**/libWCSimRoot.dylib'))
-            if len(self.wcsimRootLib) == 0 :
-                raise RuntimeError("Couldn't find libWCSimRoot in "+environ.get('WCSIMDIR'))
-            self.initRootSystem()
-            
-        self.name = "wcsimReader"
         
-        # Set up TChains
-        self.eventChain = ROOT.TChain("wcsimT")
-        self.geometryChain = ROOT.TChain("wcsimGeoT")
-
-        # Geometry is read in when first file gets added
-        self.geometry = None
-
-    def initRootSystem(self) :
-        if Reader.root_system == None :
-            print("Loading WCSim ROOT library {0}".format(str(self.wcsimRootLib[0])))
-            Reader.root_system = ROOT.gSystem
-            Reader.root_system.Load(str(self.wcsimRootLib[0]))
+        self._name = "wcsimReader"
+        print("Initializing {0}".format(self._name))
+        self._reader = py_wcsim_reader.py_wcsim_reader()
+        self._geometryInit = False
+        self._radius = self._reader.cylinder_radius
+        self._halfHeight = self._reader.cylinder_half_height
         
     def __getitem__(self, i) :
-        if i < 0 or i > self.N :
+
+        if i < 0 or i > self._reader.N_events :
             raise IndexError('Attempting to get {0}th event, but only have {1}.'.format(i, self.N))
-        # Implement entry list for speed if i is list?
-        print("GETTING ENTRY {0}".format(i))
-        self.initRootSystem()
-        self.eventChain.GetEntry(i)
+        
+        N_subevents = self._reader.loadEvent(i)
 
         subEvents = []
-        for iSubEvent in range(self.eventChain.wcsimrootevent.GetNumberOfEvents()) :
-            trigger = self.eventChain.wcsimrootevent.GetTrigger(iSubEvent)
-            
-            nHits = trigger.GetNcherenkovdigihits()
 
-            hits = np.zeros(nHits, dtype = [('PMT_number', np.uint32), ('q', np.float32), ('t', np.float32)])
-
-            for i, hit in enumerate(trigger.GetCherenkovDigiHits()) :
-                hits[i] = (hit.GetTubeId(), hit.GetQ(), hit.GetT())
-            
-            nTrueTracks = trigger.GetNtrack()
-            trueTracks = np.zeros(nTrueTracks, dtype = [('PDG_code', np.uint32), ('m', np.float32), ('p', np.float32), ('E', np.float32), ('startvol', np.int32), ('stopvol', np.int32), ('dir_x', np.float32), ('dir_y', np.float32), ('dir_z', np.float32), ('stop_x', np.float32), ('stop_y', np.float32), ('stop_z', np.float32), ('start_x', np.float32), ('start_y', np.float32), ('start_z', np.float32), ('parenttype', np.int32), ('time', np.float32), ('id', np.int32)])
-
-            for i, track in enumerate(trigger.GetTracks()) :
-                trueTracks = (track.GetIpnu(), track.GetM(), track.GetP(), track.GetE(), track.GetStartvol(), track.GetStopvol(), track.GetDir(0), track.GetDir(1), track.GetDir(2), track.GetStop(0), track.GetStop(1), track.GetStop(2), track.GetStart(0), track.GetStart(1), track.GetStart(2), track.GetParenttype(), track.GetTime(), track.GetId())
-
+        for iSubEvent in range(N_subevents) :
+            hits = self._reader.getHits(iSubEvent)
+            trueTracks = self._reader.getTrueTracks(iSubEvent)
             subEvents.append({"hits" : hits, "trueTracks" : trueTracks})
 
         return subEvents
-                
     
     def __len__ (self) :
-        return self.N
+        return self._reader.N_events
 
     def addFile(self, fileName) :
-        self.eventChain.Add(fileName)
-        self.N = self.eventChain.GetEntries()
-        self.eventChain.GetBranch("wcsimrootevent").SetAutoDelete(ROOT.kTRUE)
+        fileNames = glob(fileName)
+        print(fileNames)
+        print(len(fileNames))
+        for f in fileNames :
+            self._reader.addFile(f)
+#            print("Adding file {0} events so far {1}".format(f, self._reader.N_events))
+        self._pmts = self._reader.pmtInfo
+            
+        print("N events {0}".format(self._reader.N_events))
+        if not self._geometryInit :
+            self.fillRowColumn()
+            
+    def __contains__(self, m):
+        return False
+#    def __iter__(self) :
+#        return self._pmts.__iter__
+#    def __len__(self) :
+#        return self._pmts.__len__
+    def radius(self) :
+        return self._radius
+    def halfHeight(self) :
+        return self._halfHeight
+    def pmts(self) :
+        return self._pmts
 
-        if self.geometry == None :
-            self.geometryChain.Add(fileName)
-            self.geometry = wcsimGeometry(self.geometryChain)
+
 """
 class wcsimEvent(data_model.event) :
     def __init__(self, wcsimRootEvent) :
@@ -130,43 +113,7 @@ class wcsimSubEvent(data_model.subEvent) :
     def trueTracks(self) :
         return self._trueTracks
 """    
-class wcsimGeometry(geometry.cylindricalDetector) :
-    def __init__(self, geometryChain) :
-        geometryChain.GetEntry(0)
-        thisGeo = geometryChain.wcsimrootgeom
-        self.N_PMT = thisGeo.GetWCNumPMT()
-        self._radius = thisGeo.GetWCCylRadius()
-        self._halfHeight = thisGeo.GetWCCylLength()
 
-        self._pmts = np.zeros(self.N_PMT, dtype = [('x', np.float32), ('y', np.float32), ('z', np.float32), ('dir_x', np.float32), ('dir_y', np.float32), ('dir_z', np.float32), ('location', np.uint8), ('row', np.uint16), ('column', np.uint16)])
-
-        for iPMT in range(self.N_PMT) :
-            this_pmt = thisGeo.GetPMTPtr(iPMT)
-            
-            self._pmts[iPMT] = (this_pmt.GetPosition(0),
-                                this_pmt.GetPosition(1),
-                                this_pmt.GetPosition(2),
-                                this_pmt.GetOrientation(0),
-                                this_pmt.GetOrientation(1),
-                                this_pmt.GetOrientation(2),
-                                this_pmt.GetCylLoc(),
-                                0, 0)
-
-
-        self.fillRowColumn()
-
-    def __contains__(self, m):
-        return False
-    def __iter__(self) :
-        return self._pmts.__iter__
-    def __len__(self) :
-        return self._pmts.__len__
-    def radius(self) :
-        return self._radius
-    def halfHeight(self) :
-        return self._halfHeight
-    def pmts(self) :
-        return self._pmts
         
             
             
