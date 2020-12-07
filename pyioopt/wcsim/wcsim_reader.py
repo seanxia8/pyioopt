@@ -19,8 +19,8 @@ class Reader(reader.Reader, geometry.cylindricalDetector) :
         
     def __getitem__(self, i) :
 
-        if i < 0 or i > self._reader.N_events :
-            raise IndexError('Attempting to get {0}th event, but only have {1}.'.format(i, self.N))
+        if i < 0 or i >= self._reader.N_events :
+            raise IndexError('Attempting to get {0}th event, but only have {1}.'.format(i, self._reader.N_events))
         
         N_subevents = self._reader.loadEvent(i)
 

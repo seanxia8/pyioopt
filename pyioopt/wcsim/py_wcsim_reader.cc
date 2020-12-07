@@ -25,7 +25,7 @@ struct pmt {
 };
 
 struct trueTrack {
-  uint32_t PDG_code;
+  int32_t PDG_code;
   float m;
   float p;
   float E;
