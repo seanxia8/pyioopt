@@ -14,6 +14,7 @@ namespace py = pybind11;
 struct pmt;
 struct trueTrack;
 struct hit;
+struct vertex;
 
 class py_wcsim_reader {
 
@@ -42,5 +43,7 @@ class py_wcsim_reader {
   int loadEvent(int i);
   py::array_t<hit> getHits(int trigger);
   py::array_t<trueTrack> getTrueTracks(int trigger);
+  py::array_t<vertex> getVertex(int trigger);
+  void clearEvent();
   
 };

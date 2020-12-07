@@ -16,8 +16,6 @@ class Reader(reader.Reader, geometry.cylindricalDetector) :
         print("Initializing {0}".format(self._name))
         self._reader = py_wcsim_reader.py_wcsim_reader()
         self._geometryInit = False
-        self._radius = self._reader.cylinder_radius
-        self._halfHeight = self._reader.cylinder_half_height
         
     def __getitem__(self, i) :
 
@@ -31,7 +29,8 @@ class Reader(reader.Reader, geometry.cylindricalDetector) :
         for iSubEvent in range(N_subevents) :
             hits = self._reader.getHits(iSubEvent)
             trueTracks = self._reader.getTrueTracks(iSubEvent)
-            subEvents.append({"hits" : hits, "trueTracks" : trueTracks})
+            vertex = self._reader.getVertex(iSubEvent)
+            subEvents.append({"hits" : hits, "trueTracks" : trueTracks, "vertex" : vertex})
 
         return subEvents
     
@@ -50,6 +49,10 @@ class Reader(reader.Reader, geometry.cylindricalDetector) :
         print("N events {0}".format(self._reader.N_events))
         if not self._geometryInit :
             self.fillRowColumn()
+            self._radius = self._reader.cylinder_radius
+            self._halfHeight = self._reader.cylinder_half_height
+
+
             
     def __contains__(self, m):
         return False

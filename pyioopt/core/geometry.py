@@ -182,7 +182,7 @@ class cylindricalDetector(detectorGeometry) :
         print(min_EC)
         print(d_EC)
         for i_endcap, endcap in enumerate(endcaps) :
-            self._pmts['row'][endcap] = ((self._pmts[x][endcap]-min_EC[i_endcap][x])/d_EC[i_endcap][x]).astype(int)
-            self._pmts['column'][endcap] = ((self._pmts[y][endcap]-min_EC[i_endcap][y])/d_EC[i_endcap][y]).astype(int)
+            self._pmts['row'][endcap] = ((self._pmts[y][endcap]-min_EC[i_endcap][y])/d_EC[i_endcap][y]).astype(int)
+            self._pmts['column'][endcap] = ((self._pmts[x][endcap]-min_EC[i_endcap][x])/d_EC[i_endcap][x]).astype(int)
 
     

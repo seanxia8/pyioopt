@@ -29,8 +29,8 @@ struct trueTrack {
   float m;
   float p;
   float E;
-  int startVol;
-  int stopVol;
+  int32_t startVol;
+  int32_t stopVol;
   float dirx;
   float diry;
   float dirz;
@@ -40,9 +40,9 @@ struct trueTrack {
   float startx;
   float starty;
   float startz;
-  int parenttype;
+  int32_t parenttype;
   float time;
-  int id;
+  int32_t id;
 };
 
 struct hit {
@@ -51,6 +51,11 @@ struct hit {
   float t;
 };
 
+struct vertex {
+  float vtx_x;
+  float vtx_y;
+  float vtx_z;
+};
 
 py_wcsim_reader::py_wcsim_reader(){
   
@@ -58,10 +63,10 @@ py_wcsim_reader::py_wcsim_reader(){
   geometryChain = new TChain("wcsimGeoT");
 
   event = new WCSimRootEvent();
+  event->Initialize();
   geo = new WCSimRootGeom();
 
   eventChain->SetBranchAddress("wcsimrootevent", &event);
-  //  eventChain->GetBranch("wcsimrootevent")->SetAutoDelete(kTRUE);
   geometryChain->SetBranchAddress("wcsimrootgeom", &geo);
   
   N_events = 0;
@@ -112,6 +117,12 @@ void py_wcsim_reader::addFile(std::string fileName){
 }
 
 int py_wcsim_reader::loadEvent(int i){
+
+  // TBranch autodelete crashes pybind11... do this manually
+  delete event;
+  event = new WCSimRootEvent();
+  eventChain->SetBranchAddress("wcsimrootevent", &event);
+  
   eventChain->GetEntry(i);
   return event->GetNumberOfEvents();
 }
@@ -134,6 +145,19 @@ py::array_t<hit> py_wcsim_reader::getHits(int trigger) {
   return hits;
 }
 
+py::array_t<vertex> py_wcsim_reader::getVertex(int trigger) {
+
+  WCSimRootTrigger * trig = event->GetTrigger(trigger);
+  py::array_t<vertex> thisVertex = py::array_t<vertex>(1);
+  py::buffer_info vertex_buffer = thisVertex.request();
+  vertex * vertex_pointer = static_cast<vertex *>(vertex_buffer.ptr);
+  vertex_pointer[0].vtx_x = trig->GetVtx(0);
+  vertex_pointer[0].vtx_y = trig->GetVtx(1);
+  vertex_pointer[0].vtx_z = trig->GetVtx(2);
+  
+  return thisVertex; 
+}
+ 
 py::array_t<trueTrack> py_wcsim_reader::getTrueTracks(int trigger){
   WCSimRootTrigger * trig = event->GetTrigger(trigger);
 
@@ -168,6 +192,11 @@ py::array_t<trueTrack> py_wcsim_reader::getTrueTracks(int trigger){
   return trueTracks;
 }
 
+void py_wcsim_reader::clearEvent(){
+  std::cout << "CLEARING EVENT!" << std::endl;
+  event->Clear();
+}
+
 PYBIND11_MODULE(py_wcsim_reader, m) {
   m.doc() = "Python module to expose c++ WCSim ROOT file reader";
 
@@ -175,6 +204,7 @@ PYBIND11_MODULE(py_wcsim_reader, m) {
   PYBIND11_NUMPY_DTYPE(trueTrack, PDG_code, m, p, E, startVol, stopVol, dirx, diry, dirz,
   		 stopx, stopy, stopz, startx, starty, startz, parenttype, time, id);
   PYBIND11_NUMPY_DTYPE(hit, pmtNumber, q, t);
+  PYBIND11_NUMPY_DTYPE(vertex, vtx_x, vtx_y, vtx_z);
 		 
   py::class_<py_wcsim_reader>(m, "py_wcsim_reader")
     .def(py::init())
@@ -186,7 +216,9 @@ PYBIND11_MODULE(py_wcsim_reader, m) {
     .def_readwrite("pmtInfo", &py_wcsim_reader::pmtInfo)
     .def("loadEvent", &py_wcsim_reader::loadEvent)
     .def("getHits", &py_wcsim_reader::getHits)
-    .def("getTrueTracks", &py_wcsim_reader::getTrueTracks);
+    .def("getTrueTracks", &py_wcsim_reader::getTrueTracks)
+    .def("getVertex", &py_wcsim_reader::getVertex)
+    .def("clearEvent", &py_wcsim_reader::clearEvent);
 };
 
 
