@@ -6,8 +6,7 @@ import matplotlib.pyplot as plt
 rd = wcsim_reader.Reader()
 print("Initialized reader")
 
-#rd.addFile("/disk/cvilela/WCML/TrainingSampleWCSim/e-/0/WCSim/out/WCSim_TrainingSample_e-_0.root")
-rd.addFile("/disk/cvilela/WCML/TrainingSampleWCSim/*/*/WCSim/out/*.root")
+rd.addFile("/gpfs/scratch/crfernandesv/TrainingSampleWCSim/mu-/1727/WCSim/out/*.root")
 
 top = rd.mask[0]
 barrel = rd.mask[1]
@@ -46,16 +45,24 @@ for iev, event in enumerate(rd) :
                 thisBottom_t[rd.pmts()["column"][hit["pmtNumber"]-1], rd.pmts()["row"][hit["pmtNumber"]-1]] = hit['t']
         plt.figure()
         plt.imshow(thisTop_q)
+        plt.savefig("testWCSim_top_q_{0}.png".format(iev))
         plt.figure()
         plt.imshow(thisTop_t)
+        plt.savefig("testWCSim_top_t_{0}.png".format(iev))
         plt.figure()
         plt.imshow(thisBarrel_q)
+        plt.savefig("testWCSim_barrel_q_{0}.png".format(iev))
         plt.figure()
         plt.imshow(thisBarrel_t)
+        plt.savefig("testWCSim_barrel_t_{0}.png".format(iev))
         plt.figure()
         plt.imshow(thisBottom_q)
+        plt.savefig("testWCSim_bottom_q_{0}.png".format(iev))
         plt.figure()
         plt.imshow(thisBottom_t)
+        plt.savefig("testWCSim_bottom_t_{0}.png".format(iev))
         plt.show()
-
+        
         del thisTop_q, thisTop_t, thisBarrel_q, thisBarrel_t, thisBottom_q, thisBottom_t
+        
+    break # just one event, for testing
