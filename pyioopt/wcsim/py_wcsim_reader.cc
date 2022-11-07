@@ -26,6 +26,7 @@ struct pmt {
 
 struct trueTrack {
   int32_t PDG_code;
+  int32_t flag;
   float m;
   float p;
   float E;
@@ -130,6 +131,13 @@ int py_wcsim_reader::loadEvent(int i){
 py::array_t<hit> py_wcsim_reader::getHits(int trigger) {
 
   WCSimRootTrigger * trig = event->GetTrigger(trigger);
+ 
+  float tOffset = 0.0;
+  int aTime = 0;
+  int aTimeZero = 0;
+  aTime = trig->GetHeader()->GetDate();
+  tOffset = float(aTime - aTimeZero);
+
   uint32_t N_hits = trig->GetNcherenkovdigihits();
 
   py::array_t<hit> hits = py::array_t<hit>(N_hits);
@@ -140,7 +148,7 @@ py::array_t<hit> py_wcsim_reader::getHits(int trigger) {
   for(uint32_t iHit = 0; iHit < N_hits; iHit++){
     hits_pointer[iHit].pmtNumber = static_cast<WCSimRootCherenkovDigiHit*>(wcsimHits->operator[](iHit))->GetTubeId();
     hits_pointer[iHit].q = static_cast<WCSimRootCherenkovDigiHit*>(wcsimHits->operator[](iHit))->GetQ();
-    hits_pointer[iHit].t = static_cast<WCSimRootCherenkovDigiHit*>(wcsimHits->operator[](iHit))->GetT();
+    hits_pointer[iHit].t = static_cast<WCSimRootCherenkovDigiHit*>(wcsimHits->operator[](iHit))->GetT() - tOffset;
   }
   return hits;
 }
@@ -171,6 +179,7 @@ py::array_t<trueTrack> py_wcsim_reader::getTrueTracks(int trigger){
 
   for (uint32_t iTrack = 0; iTrack < N_true_tracks; iTrack++){
     trueTracks_pointer[iTrack].PDG_code = static_cast<WCSimRootTrack*>(wcsimTracks->operator[](iTrack))->GetIpnu();
+    trueTracks_pointer[iTrack].flag = static_cast<WCSimRootTrack*>(wcsimTracks->operator[](iTrack))->GetFlag();
     trueTracks_pointer[iTrack].m = static_cast<WCSimRootTrack*>(wcsimTracks->operator[](iTrack))->GetM();
     trueTracks_pointer[iTrack].p = static_cast<WCSimRootTrack*>(wcsimTracks->operator[](iTrack))->GetP();
     trueTracks_pointer[iTrack].E = static_cast<WCSimRootTrack*>(wcsimTracks->operator[](iTrack))->GetE();
@@ -201,7 +210,7 @@ PYBIND11_MODULE(py_wcsim_reader, m) {
   m.doc() = "Python module to expose c++ WCSim ROOT file reader";
 
   PYBIND11_NUMPY_DTYPE(pmt, x, y, z, dirx, diry, dirz, location, row, column);
-  PYBIND11_NUMPY_DTYPE(trueTrack, PDG_code, m, p, E, startVol, stopVol, dirx, diry, dirz,
+  PYBIND11_NUMPY_DTYPE(trueTrack, PDG_code, flag, m, p, E, startVol, stopVol, dirx, diry, dirz,
   		 stopx, stopy, stopz, startx, starty, startz, parenttype, time, id);
   PYBIND11_NUMPY_DTYPE(hit, pmtNumber, q, t);
   PYBIND11_NUMPY_DTYPE(vertex, vtx_x, vtx_y, vtx_z);

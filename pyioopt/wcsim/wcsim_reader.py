@@ -7,6 +7,7 @@ from pathlib import Path
 import numpy as np
 
 import py_wcsim_reader
+#from pyioopt.wcsim import py_wcsim_reader
 
 class Reader(reader.Reader, geometry.cylindricalDetector) :
     
