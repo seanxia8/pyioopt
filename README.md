@@ -47,7 +47,8 @@ mkdir build
 cd build
 
 cmake -DDOWNLOAD_CATCH=1 -DPYBIND11_FINDPYTHON=ON -DPYTHON_INCLUDE_DIR=/usr/include/python2.7 -DPYTHON_LIBRARY=$(python -c "import distutils.sysconfig as sysconfig; print(sysconfig.get_config_var('LIBDIR'))") ../
-make
+make -j${ncores}
+make install
 ```
 > The extra condition to CMake helps to find the python `include` directory properly. 
 
