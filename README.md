@@ -1,7 +1,7 @@
 # Modular python interface for optical detector (e.g., water Cherenkov) data.
 
 ## Pre-requisites
-It is necessary to have ${WCSIMDIR} defined and CMake 3.9+ for this interface.
+It is necessary to have `${WCSIMDIR}` defined and CMake 3.9+ for this interface.
 Here are some quick instruction on installing CMake 3.15.3.
 ```
 In the planned directory of installation do
@@ -15,7 +15,7 @@ make
 export PATH="$PWD/bin:$PATH"
 ```
 
-Before start compiling, go to ./pybind11 to checkout/update the submodule 
+Before start compiling, go to `./pybind11` to checkout/update the submodule 
 
 ```git submodule update --init --recursive```
 
@@ -31,7 +31,9 @@ On this docker image, `python 2.7` is avaible but the `python-dev`is not install
 
 ```
 apt-get install python-dev (for Ubuntu)
+```
 or
+```
 yum install python-devel (for CentOS)
 ```
 
@@ -40,7 +42,7 @@ yum install python-devel (for CentOS)
 Then
 
 ```
-cd ../
+cd ${top_of_pyioopt}
 mkdir build
 cd build
 
@@ -49,4 +51,9 @@ make
 ```
 > The extra condition to CMake helps to find the python `include` directory properly. 
 
+Finally add
+```
+export PYTHONPATH=/${pyioopt_dir}/:${PYTHONPATH}
+```
+to the `env` file.
 ```
