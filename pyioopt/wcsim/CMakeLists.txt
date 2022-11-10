@@ -6,7 +6,19 @@ if ( ${ROOT_FOUND} )
     include_directories(${ROOT_INCLUDE_DIRS})
 
     list(APPEND CMAKE_MODULE_PATH "$ENV{ROOTSYS}/cmake/modules")
-    include(RootNewMacros)
+
+    #include(RootNewMacros)
+    GET_FILENAME_COMPONENT(ROOT_CMAKE_DIR "${ROOT_USE_FILE}" DIRECTORY)
+    FIND_FILE(ROOT_MACROS_FILE
+	      #NAMES RootNewMacros.cmake	  
+	      NAMES RootNewMacros
+              HINTS ${ROOT_CMAKE_DIR}/modules/ $ENV{ROOTSYS}/../cmake/modules $ENV{ROOTSYS}/cmake/modules)  
+    IF(NOT ROOT_MACROS_FILE)
+    	   MESSAGE(WARNING "Cannot find ROOT macros, including generic file as fallback.")	
+	   INCLUDE("${ROOT_USE_FILE}")
+    ELSE()
+	INCLUDE(${ROOT_MACROS_FILE})
+	ENDIF()
 
     ROOT_GENERATE_DICTIONARY(WCSimRootDict $ENV{WCSIMDIR}/include/WCSimRootEvent.hh $ENV{WCSIMDIR}/include/WCSimRootGeom.hh $ENV{WCSIMDIR}/include/WCSimPmtInfo.hh $ENV{WCSIMDIR}/include/WCSimEnumerations.hh  $ENV{WCSIMDIR}/include/WCSimRootOptions.hh $ENV{WCSIMDIR}/include/WCSimRootTools.hh LINKDEF $ENV{WCSIMDIR}/include/WCSimRootLinkDef.hh)
 
