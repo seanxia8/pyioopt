@@ -46,15 +46,20 @@ cd ${top_of_pyioopt}
 mkdir build
 cd build
 
-cmake -DDOWNLOAD_CATCH=1 -DPYBIND11_FINDPYTHON=ON -DPYTHON_INCLUDE_DIR=/usr/include/python2.7 -DPYTHON_LIBRARY=$(python -c "import distutils.sysconfig as sysconfig; print(sysconfig.get_config_var('LIBDIR'))") ../
+cmake -DDOWNLOAD_CATCH=1 -DPYBIND11_FINDPYTHON=ON ../
+
+or
+
+cmake -DPYBIND11_FINDPYTHON=OFF -DPYTHON_INCLUDE_DIR=$(python -c "from distutils.sysconfig import get_python_inc; print(get_python_inc())") -DPYTHON_LIBRARY=$(python -c "import distutils.sysconfig as sysconfig; print(sysconfig.get_config_var('LIBDIR'))") ../
+
 make -j${ncores}
 make install
 ```
-> The extra condition to CMake helps to find the python `include` directory properly. 
+> The extra condition to CMake helps find the python `include` directory properly. 
 
 Finally add
 ```
-export PYTHONPATH=/${pyioopt_dir}/:${PYTHONPATH}
+export PYTHONPATH=${pyioopt_dir}/:${PYTHONPATH}
 ```
 to the `env` file.
 ```
