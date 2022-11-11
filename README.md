@@ -16,7 +16,7 @@ export PATH="$PWD/bin:$PATH"
 ```
 In the case of multiple CMake definition, try
 ```
-ls -tlr ${cmake_dir}/Modules/CMake.cmake
+ls -tlr ${cmake_installed_dir}/Modules/CMake.cmake
 ```
 to make sure that the path is correct. Otherwise will have `CMAKE_ROOT not found`.
 
