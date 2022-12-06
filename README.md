@@ -42,7 +42,10 @@ or
 yum install python-devel (for CentOS)
 ```
 
-*If running with `python3`, replace `python-dev` with `python3-dev` or `python-devel` with `python3-devel`.*
+*If running with `python3`, replace `python-dev` with `python3-dev` or `python-devel` with `python3-devel`. And since `collection.abs`, which is not introduced untili `python 3.3`, is used in this interface, it is recommended to use `python 3.3+`. Quick hack to switch to python 3+ as a root user*
+```
+update-alternatives --install /usr/bin/python python /usr/bin/python3 1
+```
 
 Then
 
@@ -67,4 +70,3 @@ Finally add
 export PYTHONPATH=${pyioopt_dir}/:${PYTHONPATH}
 ```
 to the `env` file.
-```
