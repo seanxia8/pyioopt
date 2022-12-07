@@ -76,30 +76,30 @@ if __name__=='__main__':
         dset_pids=f.create_dataset("pids", shape=(total_evts, 1), dtype=np.float32, maxshape=(total_evts, 1), compression="gzip", compression_opts=5, shuffle=True)
         dset_positions=f.create_dataset("positions", shape=(total_evts, 1, 3), dtype=np.float32, maxshape=(total_evts, 1, 3), compression="gzip", compression_opts=5, shuffle=True)
 
-        dset_event_data=f.create_dataset("event_data_barrel", shape=(total_evts*num_pmt_barrel, 3), dtype=np.float32, maxshape=(total_evts*num_pmt_barrel, 3), compression="gzip", compression_opts=5, shuffle=True)
-        dset_event_data_top=f.create_dataset("event_data_top", shape=(total_evts*num_pmt_top, 3), dtype=np.float32, maxshape=(total_evts*num_pmt_top, 3), compression="gzip", compression_opts=5, shuffle=True)
-        dset_event_data_bottom=f.create_dataset("event_data_bottom", shape=(total_evts*num_pmt_bottom, 3), dtype=np.float32, maxshape=(total_evts*num_pmt_bottom, 3),  compression="gzip", compression_opts=5, shuffle=True)
+        dset_event_data=f.create_dataset("event_data_barrel", shape=(total_evts*num_pmt_barrel, 2), dtype=np.float32, maxshape=(total_evts*num_pmt_barrel, 2), compression="gzip", compression_opts=5, shuffle=True)
+        dset_event_data_top=f.create_dataset("event_data_top", shape=(total_evts*num_pmt_top, 2), dtype=np.float32, maxshape=(total_evts*num_pmt_top, 2), compression="gzip", compression_opts=5, shuffle=True)
+        dset_event_data_bottom=f.create_dataset("event_data_bottom", shape=(total_evts*num_pmt_bottom, 2), dtype=np.float32, maxshape=(total_evts*num_pmt_bottom, 2),  compression="gzip", compression_opts=5, shuffle=True)
 
 
-        dset_hit_index=f.create_dataset("hit_index_barrel", shape=(total_evts, 1), dtype=np.int32, 
-                                        maxshape=(total_evts, 1), 
+        dset_hit_index=f.create_dataset("hit_index_barrel", shape=(total_evts*num_pmt_barrel,), dtype=np.int32, 
+                                        maxshape=(total_evts*num_pmt_barrel,), 
                                         compression="gzip", compression_opts=5, shuffle=True)
 
-        dset_hit_index_top=f.create_dataset("hit_index_top", shape=(total_evts, 1), dtype=np.int32, 
-                                            maxshape=(total_evts, 1), 
+        dset_hit_index_top=f.create_dataset("hit_index_top", shape=(total_evts*num_pmt_top,), dtype=np.int32, 
+                                            maxshape=(total_evts*num_pmt_top,), 
                                             compression="gzip", compression_opts=5, shuffle=True)
-        dset_hit_index_bottom=f.create_dataset("hit_index_bottom", shape=(total_evts, 1), dtype=np.int32, 
-                                               maxshape=(total_evts, 1), 
+        dset_hit_index_bottom=f.create_dataset("hit_index_bottom", shape=(total_evts*num_pmt_bottom,), dtype=np.int32, 
+                                               maxshape=(total_evts*num_pmt_bottom,), 
                                                compression="gzip", compression_opts=5, shuffle=True)
 
-        dset_nhit=f.create_dataset("nhit_barrel", shape=(total_evts, 1), dtype=np.int32, 
-                                   maxshape=(total_evts, 1), 
+        dset_nhit=f.create_dataset("nhit_barrel", shape=(total_evts, 2), dtype=np.int32, 
+                                   maxshape=(total_evts, 2), 
                                    compression="gzip", compression_opts=5, shuffle=True)
-        dset_nhit_top=f.create_dataset("nhit_top", shape=(total_evts, 1), dtype=np.int32, 
-                                       maxshape=(total_evts, 1), 
+        dset_nhit_top=f.create_dataset("nhit_top", shape=(total_evts, 2), dtype=np.int32, 
+                                       maxshape=(total_evts, 2), 
                                        compression="gzip", compression_opts=5, shuffle=True)
-        dset_nhit_bottom=f.create_dataset("nhit_bottom", shape=(total_evts, 1), dtype=np.int32, 
-                                          maxshape=(total_evts, 1), 
+        dset_nhit_bottom=f.create_dataset("nhit_bottom", shape=(total_evts, 2), dtype=np.int32, 
+                                          maxshape=(total_evts, 2), 
                                           compression="gzip", compression_opts=5, shuffle=True)
         
         dset_mask = f.create_dataset("mask", shape=(2, num_pmt_top), dtype=np.bool_, maxshape=(2, num_pmt_top), chunks=(1,num_pmt_top), compression="gzip", compression_opts=5, shuffle=True)
@@ -146,13 +146,9 @@ if __name__=='__main__':
                     hit_indices_top = np.where(event_top[:,0]>0)
                     hit_indices_bottom = np.where(event_bottom[:,0]>0) 
 
-                    dset_nhit[offset+i] = len(hit_indices_barrel[0])
-                    dset_nhit_top[offset+i] = len(hit_indices_top[0])
-                    dset_nhit_bottom[offset+i] = len(hit_indices_bottom[0])                
-
-                    dset_hit_index[offset+i] = barrel_hit_offset
-                    dset_hit_index_top[offset+i] = top_hit_offset
-                    dset_hit_index_bottom[offset+i] = bottom_hit_offset
+                    dset_nhit[offset+i] = [len(hit_indices_barrel[0]), barrel_hit_offset]
+                    dset_nhit_top[offset+i] = [len(hit_indices_top[0]), top_hit_offset]
+                    dset_nhit_bottom[offset+i] = [len(hit_indices_bottom[0]), bottom_hit_offset]                
                     
                     barrel_hit_offset_next += len(hit_indices_barrel[0])
                     top_hit_offset_next += len(hit_indices_top[0])
@@ -161,6 +157,10 @@ if __name__=='__main__':
                     dset_event_data[barrel_hit_offset:barrel_hit_offset_next] = event_barrel[hit_indices_barrel]
                     dset_event_data_top[top_hit_offset:top_hit_offset_next] = event_top[hit_indices_top]
                     dset_event_data_bottom[bottom_hit_offset:bottom_hit_offset_next] = event_bottom[hit_indices_bottom]
+
+                    dset_hit_index[barrel_hit_offset:barrel_hit_offset_next] = hit_indices_barrel[0]
+                    dset_hit_index_top[top_hit_offset:top_hit_offset_next] = hit_indices_top[0]
+                    dset_hit_index_bottom[bottom_hit_offset:bottom_hit_offset_next] = hit_indices_bottom[0]
 
                     barrel_hit_offset = barrel_hit_offset_next
                     top_hit_offset = top_hit_offset_next
@@ -177,17 +177,17 @@ if __name__=='__main__':
                 
                     
             else:
-                dset_event_data[offset:offset_next] = input_arr['event_data'].reshape(1, input_arr['event_data'].shape[-1])
-                dset_event_data_top[offset:offset_next] = input_arr['event_data_top'].reshape(1, input_arr['event_data_top'].shape[-1])
-                dset_event_data_bottom[offset:offset_next] = input_arr['event_data_bottom'].reshape(1, input_arr['event_data_bottom'].shape[-1])
+                dset_event_data[offset*num_pmt_barrel:offset_next*num_pmt_barrel] = input_arr['event_data'].reshape(-1, input_arr['event_data'].shape[-1])
+                dset_event_data_top[offset*num_pmt_top:offset_next*num_pmt_top] = input_arr['event_data_top'].reshape(-1, input_arr['event_data_top'].shape[-1])
+                dset_event_data_bottom[offset*num_pmt_bottom:offset_next*num_pmt_bottom] = input_arr['event_data_bottom'].reshape(-1, input_arr['event_data_bottom'].shape[-1])
                 
-                dset_nhit[offset:offset_next] = np.full((total_evts, 1), num_pmt_barrel, dtype=np.int32)
-                dset_nhit_top[offset:offset_next] = np.full((total_evts, 1), num_pmt_top, dtype=np.int32)
-                dset_nhit_bottom[offset:offset_next] = np.full((total_evts, 1), num_pmt_bottom, dtype=np.int32)
+                dset_nhit[offset*num_pmt_barrel:offset_next*num_pmt_barrel] = np.full((total_evts, 2), [num_pmt_barrel,0], dtype=np.int32)
+                dset_nhit_top[offset*num_pmt_top:offset_next*num_pmt_top] = np.full((total_evts, 2), [num_pmt_top,0], dtype=np.int32)
+                dset_nhit_bottom[offset*num_pmt_bottom:offset_next*num_pmt_bottom] = np.full((total_evts, 2), [num_pmt_bottom,0], dtype=np.int32)
                 
-                dset_hit_index[offset:offset_next] = (np.indices((total_evts,), dtype=np.int32)*num_pmt_barrel).reshape((total_evts,1))
-                dset_hit_index_top[offset:offset_next] = (np.indices((total_evts,), dtype=np.int32)*num_pmt_top).reshape((total_evts,1))
-                dset_hit_index_bottom[offset:offset_next] = (np.indices((total_evts,), dtype=np.int32)*num_pmt_bottom).reshape((total_evts, 1))
+                dset_hit_index[offset*num_pmt_barrel:offset_next*num_pmt_barrel] = np.tile(np.indices((num_pmt_barrel,), dtype=np.int32), total_evts)
+                dset_hit_index_top[offset*num_pmt_top:offset_next*num_pmt_top] = np.tile(np.indices((num_pmt_top,), dtype=np.int32), total_evts)
+                dset_hit_index_bottom[offset*num_pmt_bottom:offset_next*num_pmt_bottom] = np.tile(np.indices((num_pmt_bottom,), dtype=np.int32), total_evts)
 
                                 
             offset = offset_next
@@ -197,8 +197,14 @@ if __name__=='__main__':
             dset_event_data_top.resize((top_hit_offset_next, dset_event_data_top.shape[1]))
             dset_event_data_bottom.resize((bottom_hit_offset_next, dset_event_data_bottom.shape[1]))
 
-        print(dset_event_data.shape, dset_nhit.shape)
-        print(dset_labels.shape)
+            dset_hit_index.resize((barrel_hit_offset_next,))
+            dset_hit_index_top.resize((top_hit_offset_next,))
+            dset_hit_index_bottom.resize((bottom_hit_offset_next,))
+
+
+
+        #print(dset_event_data.shape, dset_nhit.shape)
+        #print(dset_labels.shape)
 
     #print("Num of Events:", events_num, " with energy < ", E_uplimit )
     print("Saved", offset, " events.")

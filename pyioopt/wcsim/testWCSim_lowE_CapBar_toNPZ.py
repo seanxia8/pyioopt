@@ -83,9 +83,9 @@ if __name__ == '__main__':
     labels = np.empty((events_num, 1),dtype=np.float32)
     pids= np.empty((events_num, 1),dtype=np.float32)
     positions= np.empty((events_num, 1, 3),dtype=np.float32)
-    event_data= np.empty((events_num, barrel.shape[0]*barrel.shape[1], 3), dtype =np.float32) #q, t, pmt
-    event_data_top = np.empty((events_num, top.shape[0]*top.shape[1], 3), dtype = np.float32)
-    event_data_bottom = np.empty((events_num, bottom.shape[0]*bottom.shape[1], 3),dtype = np.float32)
+    event_data= np.empty((events_num, barrel.shape[0]*barrel.shape[1], 2), dtype =np.float32) #q, t
+    event_data_top = np.empty((events_num, top.shape[0]*top.shape[1], 2), dtype = np.float32)
+    event_data_bottom = np.empty((events_num, bottom.shape[0]*bottom.shape[1], 2),dtype = np.float32)
 
     i = 0
     j = 0
@@ -127,15 +127,15 @@ if __name__ == '__main__':
                     if rd.pmts()["location"][hit["pmtNumber"]-1] == 0 :
                         thisTop_q[rd.pmts()["column"][hit["pmtNumber"]-1], rd.pmts()["row"][hit["pmtNumber"]-1]] = hit['q']
                         thisTop_t[rd.pmts()["column"][hit["pmtNumber"]-1], rd.pmts()["row"][hit["pmtNumber"]-1]] = hit['t']
-                        thisTop_pmt[rd.pmts()["column"][hit["pmtNumber"]-1], rd.pmts()["row"][hit["pmtNumber"]-1]] = hit["pmtNumber"]
+                        #thisTop_pmt[rd.pmts()["column"][hit["pmtNumber"]-1], rd.pmts()["row"][hit["pmtNumber"]-1]] = hit["pmtNumber"]
                     elif rd.pmts()["location"][hit["pmtNumber"]-1] == 1 :
                         thisBarrel_q[rd.pmts()["column"][hit["pmtNumber"]-1], rd.pmts()["row"][hit["pmtNumber"]-1]] = hit['q']
                         thisBarrel_t[rd.pmts()["column"][hit["pmtNumber"]-1], rd.pmts()["row"][hit["pmtNumber"]-1]] = hit['t']
-                        thisBarrel_pmt[rd.pmts()["column"][hit["pmtNumber"]-1], rd.pmts()["row"][hit["pmtNumber"]-1]] = hit["pmtNumber"]
+                        #thisBarrel_pmt[rd.pmts()["column"][hit["pmtNumber"]-1], rd.pmts()["row"][hit["pmtNumber"]-1]] = hit["pmtNumber"]
                     elif rd.pmts()["location"][hit["pmtNumber"]-1] == 2 :
                         thisBottom_q[rd.pmts()["column"][hit["pmtNumber"]-1], rd.pmts()["row"][hit["pmtNumber"]-1]] = hit['q']
                         thisBottom_t[rd.pmts()["column"][hit["pmtNumber"]-1], rd.pmts()["row"][hit["pmtNumber"]-1]] = hit['t']
-                        thisBottom_pmt[rd.pmts()["column"][hit["pmtNumber"]-1], rd.pmts()["row"][hit["pmtNumber"]-1]] = hit["pmtNumber"]
+                        #thisBottom_pmt[rd.pmts()["column"][hit["pmtNumber"]-1], rd.pmts()["row"][hit["pmtNumber"]-1]] = hit["pmtNumber"]
                         
                 positions[iev] = vertex
                 energies[iev] = evt_energy
@@ -143,13 +143,13 @@ if __name__ == '__main__':
                 directions[iev] = evt_direction
                 event_data[iev,:,0] = thisBarrel_q.flatten()
                 event_data[iev,:,1] = thisBarrel_t.flatten()
-                event_data[iev,:,2] = thisBarrel_pmt.flatten()
+                #event_data[iev,:,2] = thisBarrel_pmt.flatten()
                 event_data_top[iev,:,0] = thisTop_q.flatten()
                 event_data_top[iev,:,1] = thisTop_t.flatten()
-                event_data_top[iev,:,2] = thisTop_pmt.flatten()
+                #event_data_top[iev,:,2] = thisTop_pmt.flatten()
                 event_data_bottom[iev,:,0] = thisBottom_q.flatten()
                 event_data_bottom[iev,:,1] = thisBottom_t.flatten()
-                event_data_bottom[iev,:,2] = thisBottom_pmt.flatten()
+                #event_data_bottom[iev,:,2] = thisBottom_pmt.flatten()
                 labels[iev] = pid_label # primitive setting
                 
                 del thisTop_q, thisTop_t, thisBarrel_q, thisBarrel_t, thisBottom_q, thisBottom_t                
