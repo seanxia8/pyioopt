@@ -81,15 +81,15 @@ if __name__=='__main__':
         dset_event_data_bottom=f.create_dataset("event_data_bottom", shape=(total_evts*num_pmt_bottom, 2), dtype=np.float32, maxshape=(total_evts*num_pmt_bottom, 2),  compression="gzip", compression_opts=5, shuffle=True)
 
 
-        dset_hit_index=f.create_dataset("hit_index_barrel", shape=(total_evts*num_pmt_barrel,), dtype=np.int32, 
-                                        maxshape=(total_evts*num_pmt_barrel,), 
+        dset_hit_index=f.create_dataset("hit_index_barrel", shape=(total_evts*num_pmt_barrel,1), dtype=np.int32, 
+                                        maxshape=(total_evts*num_pmt_barrel,1), 
                                         compression="gzip", compression_opts=5, shuffle=True)
 
-        dset_hit_index_top=f.create_dataset("hit_index_top", shape=(total_evts*num_pmt_top,), dtype=np.int32, 
-                                            maxshape=(total_evts*num_pmt_top,), 
+        dset_hit_index_top=f.create_dataset("hit_index_top", shape=(total_evts*num_pmt_top,1), dtype=np.int32, 
+                                            maxshape=(total_evts*num_pmt_top,1), 
                                             compression="gzip", compression_opts=5, shuffle=True)
-        dset_hit_index_bottom=f.create_dataset("hit_index_bottom", shape=(total_evts*num_pmt_bottom,), dtype=np.int32, 
-                                               maxshape=(total_evts*num_pmt_bottom,), 
+        dset_hit_index_bottom=f.create_dataset("hit_index_bottom", shape=(total_evts*num_pmt_bottom,1), dtype=np.int32, 
+                                               maxshape=(total_evts*num_pmt_bottom,1), 
                                                compression="gzip", compression_opts=5, shuffle=True)
 
         dset_nhit=f.create_dataset("nhit_barrel", shape=(total_evts, 2), dtype=np.int32, 
@@ -158,23 +158,15 @@ if __name__=='__main__':
                     dset_event_data_top[top_hit_offset:top_hit_offset_next] = event_top[hit_indices_top]
                     dset_event_data_bottom[bottom_hit_offset:bottom_hit_offset_next] = event_bottom[hit_indices_bottom]
 
-                    dset_hit_index[barrel_hit_offset:barrel_hit_offset_next] = hit_indices_barrel[0]
-                    dset_hit_index_top[top_hit_offset:top_hit_offset_next] = hit_indices_top[0]
-                    dset_hit_index_bottom[bottom_hit_offset:bottom_hit_offset_next] = hit_indices_bottom[0]
+                    #2D list instead of 1D to keep consistent structure with charge and time, easier to read for training
+                    dset_hit_index[barrel_hit_offset:barrel_hit_offset_next] = [hit_indices_barrel[0][i:i+1] for i in range(0, len(hit_indices_barrel[0]))]
+                    dset_hit_index_top[top_hit_offset:top_hit_offset_next] = [hit_indices_top[0][i:i+1] for i in range(0, len(hit_indices_top[0]))]
+                    dset_hit_index_bottom[bottom_hit_offset:bottom_hit_offset_next] = [hit_indices_bottom[0][i:i+1] for i in range(0, len(hit_indices_bottom[0]))]
 
                     barrel_hit_offset = barrel_hit_offset_next
                     top_hit_offset = top_hit_offset_next
                     bottom_hit_offset = bottom_hit_offset_next
 
-                #print(max_hit_barrel, max_hit_top, max_hit_bottom)
-                #print(len(temp_data_barrel), temp_data_barrel[0].shape, temp_data_barrel[1].shape)
-                #temp_data_barrel_trunc = np.column_stack((itertools.zip_longest(*temp_data_barrel[:,:,0], fillvalue=0)))
-                #print(temp_data_barrel, temp_data_barrel_trunc)
-
-                #dset_event_data[offset:offset_next] = input_arr['event_data'].reshape(offset_next-offset, -1, input_arr['event_data'].shape[-1])
-                #dset_event_data_top[offset:offset_next] = input_arr['event_data_top'].reshape(offset_next-offset, -1, input_arr['event_data_top'].shape[-1])
-                #dset_event_data_bottom[offset:offset_next] = input_arr['event_data_bottom'].reshape(offset_next-offset, -1, input_arr['event_data_bottom'].shape[-1])
-                
                     
             else:
                 dset_event_data[offset*num_pmt_barrel:offset_next*num_pmt_barrel] = input_arr['event_data'].reshape(-1, input_arr['event_data'].shape[-1])
@@ -185,9 +177,9 @@ if __name__=='__main__':
                 dset_nhit_top[offset*num_pmt_top:offset_next*num_pmt_top] = np.full((total_evts, 2), [num_pmt_top,0], dtype=np.int32)
                 dset_nhit_bottom[offset*num_pmt_bottom:offset_next*num_pmt_bottom] = np.full((total_evts, 2), [num_pmt_bottom,0], dtype=np.int32)
                 
-                dset_hit_index[offset*num_pmt_barrel:offset_next*num_pmt_barrel] = np.tile(np.indices((num_pmt_barrel,), dtype=np.int32), total_evts)
-                dset_hit_index_top[offset*num_pmt_top:offset_next*num_pmt_top] = np.tile(np.indices((num_pmt_top,), dtype=np.int32), total_evts)
-                dset_hit_index_bottom[offset*num_pmt_bottom:offset_next*num_pmt_bottom] = np.tile(np.indices((num_pmt_bottom,), dtype=np.int32), total_evts)
+                dset_hit_index[offset*num_pmt_barrel:offset_next*num_pmt_barrel] = np.tile(np.indices((num_pmt_barrel,), dtype=np.int32), total_evts).reshape(total_evts,1)
+                dset_hit_index_top[offset*num_pmt_top:offset_next*num_pmt_top] = np.tile(np.indices((num_pmt_top,), dtype=np.int32), total_evts).reshape(total_evts,1)
+                dset_hit_index_bottom[offset*num_pmt_bottom:offset_next*num_pmt_bottom] = np.tile(np.indices((num_pmt_bottom,), dtype=np.int32), total_evts).reshape(total_evts,1)
 
                                 
             offset = offset_next
@@ -197,9 +189,9 @@ if __name__=='__main__':
             dset_event_data_top.resize((top_hit_offset_next, dset_event_data_top.shape[1]))
             dset_event_data_bottom.resize((bottom_hit_offset_next, dset_event_data_bottom.shape[1]))
 
-            dset_hit_index.resize((barrel_hit_offset_next,))
-            dset_hit_index_top.resize((top_hit_offset_next,))
-            dset_hit_index_bottom.resize((bottom_hit_offset_next,))
+            dset_hit_index.resize((barrel_hit_offset_next,1))
+            dset_hit_index_top.resize((top_hit_offset_next,1))
+            dset_hit_index_bottom.resize((bottom_hit_offset_next,1))
 
 
 
