@@ -177,9 +177,9 @@ if __name__=='__main__':
                 dset_nhit_top[offset*num_pmt_top:offset_next*num_pmt_top] = np.full((total_evts, 2), [num_pmt_top,0], dtype=np.int32)
                 dset_nhit_bottom[offset*num_pmt_bottom:offset_next*num_pmt_bottom] = np.full((total_evts, 2), [num_pmt_bottom,0], dtype=np.int32)
                 
-                dset_hit_index[offset*num_pmt_barrel:offset_next*num_pmt_barrel] = np.tile(np.indices((num_pmt_barrel,), dtype=np.int32), total_evts).reshape(total_evts,1)
-                dset_hit_index_top[offset*num_pmt_top:offset_next*num_pmt_top] = np.tile(np.indices((num_pmt_top,), dtype=np.int32), total_evts).reshape(total_evts,1)
-                dset_hit_index_bottom[offset*num_pmt_bottom:offset_next*num_pmt_bottom] = np.tile(np.indices((num_pmt_bottom,), dtype=np.int32), total_evts).reshape(total_evts,1)
+                dset_hit_index[offset*num_pmt_barrel:offset_next*num_pmt_barrel] = np.tile(np.indices((num_pmt_barrel,), dtype=np.int32), total_evts).reshape(total_evts*num_pmt_barrel,1)
+                dset_hit_index_top[offset*num_pmt_top:offset_next*num_pmt_top] = np.tile(np.indices((num_pmt_top,), dtype=np.int32), total_evts).reshape(total_evts*num_pmt_top,1)
+                dset_hit_index_bottom[offset*num_pmt_bottom:offset_next*num_pmt_bottom] = np.tile(np.indices((num_pmt_bottom,), dtype=np.int32), total_evts).reshape(total_evts*num_pmt_bottom,1)
 
                                 
             offset = offset_next
