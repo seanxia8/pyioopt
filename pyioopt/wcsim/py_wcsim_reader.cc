@@ -109,7 +109,7 @@ void py_wcsim_reader::addFile(std::string fileName){
       pmtInfo_pointer[iPMT].z = thisPMT->GetPosition(2);
       pmtInfo_pointer[iPMT].dirx = thisPMT->GetOrientation(0);
       pmtInfo_pointer[iPMT].diry = thisPMT->GetOrientation(0);
-      pmtInfo_pointer[iPMT].dirz = thisPMT->GetOrientation(0);
+      pmtInfo_pointer[iPMT].dirz = thisPMT->GetOrientation(0); //? why all 0th element? 
       pmtInfo_pointer[iPMT].location = thisPMT->GetCylLoc();
       pmtInfo_pointer[iPMT].row = 0; // To be filled on python side
       pmtInfo_pointer[iPMT].column = 0; // To be filled on python side
